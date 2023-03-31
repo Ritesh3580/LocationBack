@@ -2,7 +2,7 @@ import { View, Text, PermissionsAndroid } from 'react-native'
 import React, { useEffect, useState } from 'react'
 
 import ReactNativeForegroundService from '@supersami/rn-foreground-service';
-import RNLocation from 'react-native-location';
+import RNLocation, { subscribeToHeadingUpdates } from 'react-native-location';
 
 
 ReactNativeForegroundService.register();
@@ -37,11 +37,19 @@ RNLocation.configure({
 });
 let locationSubscription = null;
 let locationTimeout = null;
+ 
+const taskid = 'taskid';
 
 const RootScreen = () => {
 
 
-  const is_task_running = ReactNativeForegroundService.is_task_running();
+  const is_task_running = ReactNativeForegroundService.is_task_running("taskidADD");
+  console.log("is task id-----",is_task_running)
+
+  const get_all_tasks = ReactNativeForegroundService.get_task("taskidADD");
+  console.log("---------------------8u86878",get_all_tasks);
+
+  
 
   const [locationU,setLocation] = useState('')
 
@@ -49,18 +57,17 @@ const RootScreen = () => {
    
     rootPermission();
    // _start_Task();
-
-
      console.log("--------------",locationU);
    },[is_task_running]);
 
-
+   
 
    const _start_Task = async () =>{
-    await ReactNativeForegroundService.update_task(task);
+    await ReactNativeForegroundService.add_task(task);
    }
 
    const rootPermission = async () =>{
+   
      
     const backgroundgranted = await PermissionsAndroid.request(
       PermissionsAndroid.PERMISSIONS.ACCESS_BACKGROUND_LOCATION,
@@ -77,11 +84,10 @@ const RootScreen = () => {
     if (backgroundgranted === PermissionsAndroid.RESULTS.GRANTED) {
       //do your thing!
 
-      console.log("------------------------------------>Permission Granted ");
-      
-      if(ReactNativeForegroundService.is_task_running()){
+      let  task =null;
 
-        
+      console.log("------------------------------------>Permission Granted ");
+              
       
         ReactNativeForegroundService.add_task(
           () => {
@@ -91,56 +97,67 @@ const RootScreen = () => {
                 detail: 'fine',
               },
             }).then((granted) => {
-              
-              for(let i=0; ReactNativeForegroundService.is_task_running;i++){
+                  
+                // if has permissions try to obtain location with RN location
+                console.log('Location Permissions:----- ', granted);
+                if(is_task_running == "true"){
+                  console.log("----------------Task Yes",is_task_running);
+                } 
+                else{
+                  console.log("-------------no task", is_task_running);
+                }
+                
+                // for(let i=0; ReactNativeForegroundService.is_task_running;i++){
+
+                  if (granted) {
+                    // locationSubscription && locationSubscription();
+                   
+                      RNLocation.subscribeToLocationUpdates(
+                        
+                      ([locations]) => {
+                        setLocation(locations)
+                        console.log("--------------",locations);
+                        
+    
+    
+                        // locationSubscription();
+                       //locationTimeout && clearTimeout(locationTimeout);
+                        
+                      },
+                    );
+                
+                  } else {
+                    locationSubscription && locationSubscription();
+                    locationTimeout && clearTimeout(locationTimeout);
+                    console.log('no permissions to obtain location');
+                  }
                 
 
-
-
-                console.log('Location Permissions: ', granted);
-                // if has permissions try to obtain location with RN location
-  
-                if (granted) {
-                  // locationSubscription && locationSubscription();
-                    RNLocation.subscribeToLocationUpdates(
-                      
-                    ([locations]) => {
-                      setLocation(locations)
-                      console.log("--------------",locations);
-                      
-  
-  
-                      // locationSubscription();
-                     // locationTimeout && clearTimeout(locationTimeout);
-                      
-                    },
-                  );
-                } else {
-                  locationSubscription && locationSubscription();
-                  locationTimeout && clearTimeout(locationTimeout);
-                  console.log('no permissions to obtain location');
-                }
-              }
+              //  }
+                
          
             });
           },
+          
           {
             delay: 5000,
             onLoop: true,
-            taskId: 'taskid',
+            taskId: 'taskidADD',
             onError: (e) => console.log('Error logging:', e),
           },
+        
+        
+          
+        
         );
+        
 
-      }
+         
      
     }
   }
 
-  const task = async taskData =>{
-    
-
-  }
+ 
 
 
 
