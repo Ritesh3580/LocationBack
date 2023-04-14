@@ -11,9 +11,10 @@
   },
   "dependencies": {
     "@react-native-community/geolocation": "^3.0.5",
-    "@supersami/rn-foreground-service": "^1.1.1",
+    "@supersami/rn-foreground-service": "^2.1.0",
     "react": "18.2.0",
     "react-native": "0.71.4",
+    "react-native-background-timer": "^2.4.1",
     "react-native-location": "^2.5.0"
   },
   "devDependencies": {
